@@ -1,0 +1,19 @@
+{
+    "name": "akoriq/haslock",
+    "description": "Akoriq's core Resource based URL router.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "hasanlock",
+            "email": "hasanlock@gmail.com"
+        }
+    ],
+    "require": {
+		"php": ">=5.3.8"
+    },
+	"autoload": {
+		"psr-0": { 
+			"Akoriq": "src/" 
+		}
+	}
+}
