@@ -53,7 +53,7 @@
         static function config ($key, $val='null') {
             if(empty($key)) return;
 
-            if(is_array($key)) { self::$config = $key; }
+            if(is_array($key)) { self::$config = array_merge(self::$config, $key); }
             elseif(is_string($key)) {
                 if ($val != 'null') {
                     self::$config[$key] = $val;
@@ -125,7 +125,7 @@
                 }
             }
             if (!$found) {
-                throw new \Exception("URL, $path, not found.");
+                throw new \Exception("URL, $path, not found. ".__FILE__);
             }
         }
 
