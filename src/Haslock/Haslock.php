@@ -50,19 +50,33 @@
         static $before_callbacks = array();
         static $after_callbacks = array();
 
-        static function config ($key, $val='null') {
-            if(empty($key)) return self::$config;
-
-            if(is_array($key)) { self::$config = array_merge(self::$config, $key); }
-            elseif(is_string($key)) {
-                if ($val != 'null') {
+        static function config ($key=null, $val=null) {
+            /** if key is null just return the full array */
+			if(is_null($key)) {
+				return self::$config;
+			}
+			
+			/** if key is an array they merge with old values [support updated value for existing key ]*/
+            if(is_array($key)) { 
+				self::$config = array_merge(self::$config, $key);
+				return true;
+			}
+			
+			/** else if key is a string set an individual item */
+            elseif(is_string($key) && $key) {
+                if (!is_null($val)) { /** if value is not null then set the value */
                     self::$config[$key] = $val;
-                    return;
+                    return true;
                 }
                 else {
+					/** if value is null then return the value */
                     return self::$config[$key];
                 }
             }
+			else {
+				/** if not supported key type found */
+				return false; 
+			}
 
         }
         /**
