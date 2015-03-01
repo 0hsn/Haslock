@@ -51,7 +51,7 @@
         static $after_callbacks = array();
 
         static function config ($key, $val='null') {
-            if(empty($key)) return;
+            if(empty($key)) return self::$config;
 
             if(is_array($key)) { self::$config = array_merge(self::$config, $key); }
             elseif(is_string($key)) {
