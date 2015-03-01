@@ -45,7 +45,7 @@
 
     class Haslock {
         static $curPath = '';
-        static $config = '';
+        static $config = array();
         static $di = null;
         static $before_callbacks = array();
         static $after_callbacks = array();
