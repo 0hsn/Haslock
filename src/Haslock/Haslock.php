@@ -61,7 +61,8 @@
      *
      */
 
-
+    spl_autoload_register();
+    
     class Haslock {
         static $curPath = '';
         static $config = array();
