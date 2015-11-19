@@ -8,10 +8,8 @@ namespace Akoriq\Haslock\View;
 
 use \Exception;
 
-class Error extends Base {    
-    public function displayAction($ex=null) {
-        if($ex) {
-            echo $ex->getFile();
-        }
+class Base {    
+    public function getStaticFilePath() {
+        
     }
 }
