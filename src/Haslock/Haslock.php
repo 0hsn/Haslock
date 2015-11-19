@@ -135,7 +135,9 @@
                         if(strpos($class_path, ":") !== false) {
                             /* Static */
                             list($class, $static_action) = explode(":", $class_path, 2);
-                            if( !method_exists($class,$static_action)) throw new \Exception("Static Method, $static_action, not supported.");
+                            if( !method_exists($class,$static_action)) {
+                                throw new \Exception("Static Method, $static_action, not supported.", 501);
+                            }
 
                             self::runFilter('before', self::$curPath);
                             call_user_func_array(array($class, $static_action), $matches);
@@ -145,7 +147,9 @@
                             list($class, $action) = explode("@", $class_path, 2);
 
                             $obj = new $class;
-                            if( !method_exists($obj,$action)) throw new \Exception("Method, $action, not supported.");
+                            if( !method_exists($obj,$action)) {
+                                throw new \Exception("Method, $action, not supported.", 501);
+                            }
 
                             self::runFilter('before', self::$curPath);
                             call_user_func_array(array($obj, $action), $matches);

@@ -8,10 +8,13 @@ namespace Akoriq\Haslock\View;
 
 use \Exception;
 
-class Error extends Base {    
+class Error extends Base {
+    protected $errorTplDir = "/static/error/";
+    protected $errorTplExt = ".html";
+    
     public function displayAction($ex=null) {
         if($ex) {
-            echo $ex->getFile();
+            include_once($this->getStaticFilePath().$this->errorTplDir.$ex->getCode().$this->errorTplExt);
         }
     }
 }
