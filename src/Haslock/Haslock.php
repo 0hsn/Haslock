@@ -1,7 +1,7 @@
 <?php
     namespace Akoriq\Haslock;
 
-    use Haslock\View\Error;
+    use View\Error;
 
     /**
      * Haslock
