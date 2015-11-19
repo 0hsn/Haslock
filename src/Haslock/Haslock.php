@@ -1,5 +1,6 @@
 <?php
     namespace Akoriq\Haslock;
+    
     /**
      * Haslock
      *
@@ -13,9 +14,25 @@
      *	    * The i option is added for case-insensitive searches
      *
      * Example:
+     * Predefine constants:
+     *   
+     *   'ErrorView' => class with namepspace that handles Error; 
+     *       default: 
+     *   'Domain' => domain name with URL Scheme and without forward slash on tail
+     *   'SubDirPath' => sub directoy on the path
      *
-     *   Haslock::configuration(array(
-     *       'SubDirPath' => '/gluephp'
+     *   ----------------------------------------------------------------------------------------------------
+     *   say URL is http://someurl.net/sub-dir/some-given-url
+     *   Domain     = http://someurl.net
+     *   SubDirPath = /sub-dir
+     *   Route      = /some-given-url
+     *   ----------------------------------------------------------------------------------------------------
+     *
+     * 
+     *
+     *   Haslock::config(array(
+     *       'Domain' => 'http://someurl.net',
+     *       'SubDirPath' => '/sub-dir',
      *   ));
      *
      *   $urls = array(
@@ -42,7 +59,7 @@
      *
      */
 
-
+    
     class Haslock {
         static $curPath = '';
         static $config = array();
@@ -63,7 +80,7 @@
 			}
 			
 			/** else if key is a string set an individual item */
-            elseif(is_string($key) && $key) {
+            elseif(is_string($key) && !empty($key)) {
                 if (!is_null($val)) { /** if value is not null then set the value */
                     self::$config[$key] = $val;
                     return true;
@@ -91,55 +108,76 @@
          *
          */
         static function forge ($urls) {
-            $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-            if (isset(self::$config['SubDirPath'])) $path = str_replace(self::$config['SubDirPath'], '', $path);
+            try {
 
-            $found = false;
-            krsort($urls);
+                /** replace subdirectory path */
+                $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+                if (isset(self::$config['SubDirPath'])) $path = str_replace(self::$config['SubDirPath'], '', $path);
 
-            foreach ($urls as $regex => $class_path) {
+                $found = false;
+                krsort($urls);
 
-                /* [:any, :str, :num] */
-                if(strpos($regex, ":any") !== false || strpos($regex, ":str") !== false || strpos($regex, ":num") !== false) {
-                    $regex = str_replace(array(':any', ':str', ':num'), array('(.+)', '([a-zA-Z\-_.]+)', "([0-9.]+)"), $regex);
+                foreach ($urls as $regex => $class_path) {
+
+                    /** support [:any, :str, :num] */
+                    if(strpos($regex, ":any") !== false || strpos($regex, ":str") !== false || strpos($regex, ":num") !== false) {
+                        $regex = str_replace(array(':any', ':str', ':num'), array('(.+)', '([a-zA-Z\-_.]+)', "([0-9.]+)"), $regex);
+                    }
+
+                    $regex = str_replace('/', '\/', $regex);
+                    $regex = '^' . $regex . '\/?$';
+
+                    if (preg_match("/$regex/i", $path, $matches)) {
+
+                        $found = true;
+                        self::$curPath = array_shift($matches);
+
+                        if(strpos($class_path, ":") !== false) {
+                            /* Static */
+                            list($class, $static_action) = explode(":", $class_path, 2);
+                            if( !method_exists($class,$static_action)) {
+                                throw new \Exception("Static Method, $static_action, not supported.", 501);
+                            }
+
+                            self::runFilter('before', self::$curPath);
+                            call_user_func_array(array($class, $static_action), $matches);
+                            self::runFilter('after', self::$curPath);
+                        }
+                        elseif(strpos($class_path, "@") !== false) {
+                            list($class, $action) = explode("@", $class_path, 2);
+
+                            $obj = new $class;
+                            if( !method_exists($obj,$action)) {
+                                throw new \Exception("Method, $action, not supported.", 501);
+                            }
+
+                            self::runFilter('before', self::$curPath);
+                            call_user_func_array(array($obj, $action), $matches);
+                            self::runFilter('after', self::$curPath);
+                        }
+                        else {
+                            self::runFilter('before', self::$curPath);
+                            call_user_func_array($class_path, $matches);
+                            self::runFilter('after', self::$curPath);
+                        }
+                    }
                 }
-
-                $regex = str_replace('/', '\/', $regex);
-                $regex = '^' . $regex . '\/?$';
-
-                if (preg_match("/$regex/i", $path, $matches)) {
-
-                    $found = true;
-                    self::$curPath = array_shift($matches);
-
-                    if(strpos($class_path, ":") !== false) {
-                        /* Static */
-                        list($class, $static_action) = explode(":", $class_path, 2);
-                        if( !method_exists($class,$static_action)) throw new \Exception("Static Method, $static_action, not supported.");
-
-                        self::runFilter('before', self::$curPath);
-                        call_user_func_array(array($class, $static_action), $matches);
-                        self::runFilter('after', self::$curPath);
-                    }
-                    elseif(strpos($class_path, "@") !== false) {
-                        list($class, $action) = explode("@", $class_path, 2);
-
-                        $obj = new $class;
-                        if( !method_exists($obj,$action)) throw new \Exception("Method, $action, not supported.");
-
-                        self::runFilter('before', self::$curPath);
-                        call_user_func_array(array($obj, $action), $matches);
-                        self::runFilter('after', self::$curPath);
-                    }
-                    else {
-                        self::runFilter('before', self::$curPath);
-                        call_user_func_array($class_path, $matches);
-                        self::runFilter('after', self::$curPath);
-                    }
+                if (!$found) {
+                    throw new \Exception("URL, $path, not found. ".__FILE__, 404);
                 }
             }
-            if (!$found) {
-                throw new \Exception("URL, $path, not found. ".__FILE__);
+            catch (\Exception $ex) {
+                if(!isset($config['ErrorView']) ) {
+                    $error = new View\Error;
+                    $error->displayAction($ex);
+                }
+
+/*                new $config['ErrorView'];
+
+                    print("Pleae")
+                    print("errcode: ".$ex->getCode()." errmessage: ".$ex->getMessage()." errfile: ".$ex->getFile());
+                    exit();
+*/                
             }
         }
 
@@ -160,7 +198,9 @@
 
             static $stack = array();
 
-            if (is_string($name) && $value === null) return isset($stack[$name]) ? $stack[$name] : null;
+            if (is_string($name) && $value == null) {
+                return isset($stack[$name]) ? $stack[$name] : null;
+            }
 
             // if no $name clear $stack
             if (is_null($name)) {
@@ -169,7 +209,9 @@
             }
 
             // set new $value
-            if (is_string($name)) return ($stack[$name] = $value);
+            if (is_string($name)) {
+                return ($stack[$name] = $value);
+            }
         }
 
         /**
