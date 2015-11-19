@@ -1,9 +1,6 @@
 <?php
     namespace Akoriq\Haslock;
-
-    spl_autoload_register();
-    use View\Error;
-
+    
     /**
      * Haslock
      *
@@ -167,7 +164,7 @@
             }
             catch (\Exception $ex) {
                 if(!isset($config['ErrorView']) ) {
-                    $error = new Error;
+                    $error = new View\Error;
                     $error->displayAction($ex);
                 }
 
