@@ -1,6 +1,7 @@
 <?php
     namespace Akoriq\Haslock;
 
+    spl_autoload_register();
     use View\Error;
 
     /**
@@ -61,7 +62,6 @@
      *
      */
 
-    spl_autoload_register();
     
     class Haslock {
         static $curPath = '';
