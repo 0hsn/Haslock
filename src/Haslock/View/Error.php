@@ -1,5 +1,5 @@
 <?php
-namespace Akoriq\Haslock\View;
+namespace Hasanlock\Haslock\View;
 /**
  * Default Error view controller
  *

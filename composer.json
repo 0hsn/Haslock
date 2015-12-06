@@ -1,6 +1,6 @@
 {
-    "name": "akoriq/haslock",
-    "description": "Akoriq's core Resource based URL router.",
+    "name": "hasanlock/haslock",
+    "description": "A simple URL router",
     "license": "MIT",
     "authors": [
         {
@@ -13,7 +13,7 @@
     },
 	"autoload": {
 		"psr-4": { 
-			"Akoriq\\": "src/" 
+			"Hasanlock\\": "src/" 
 		}
 	}
 }
