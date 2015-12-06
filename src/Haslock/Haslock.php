@@ -17,7 +17,7 @@
      * Predefine constants:
      *   
      *   'ErrorView' => class with namepspace that handles Error; 
-     *       default: 
+     *   'DefaultFunction' => default function to be called when no function name given; 
      *   'Domain' => domain name with URL Scheme and without forward slash on tail
      *   'SubDirPath' => sub directoy on the path
      *
@@ -108,6 +108,24 @@
          *
          */
         static function forge ($urls) {
+            $formatParser = function ($classPath) {
+                $retArr = array();
+
+                if(strpos($classPath, ":") !== false) {
+                    /* Static */
+                    $retArr = explode(":", $classPath, 2);
+                    $retArr[2] = "static";
+                }
+                elseif(strpos($classPath, "@") !== false) {
+                    $retArr = explode("@", $classPath, 2);
+                    $retArr[2] = "member";
+                }
+                else {
+                    $retArr = array($classPath, self::$config['DefaultFunction'], "member");
+                }
+                return $retArr;
+            };
+
             try {
 
                 /** replace subdirectory path */
@@ -132,52 +150,37 @@
                         $found = true;
                         self::$curPath = array_shift($matches);
 
-                        if(strpos($class_path, ":") !== false) {
-                            /* Static */
-                            list($class, $static_action) = explode(":", $class_path, 2);
-                            if( !method_exists($class,$static_action)) {
-                                throw new \Exception("Static Method, $static_action, not supported.", 501);
-                            }
+                        list($cClass, $cMethod, $cType) = $formatParser($class_path);
+                        $class = ($cType == "member") ? (new $cClass) : $cClass;
 
-                            self::runFilter('before', self::$curPath);
-                            call_user_func_array(array($class, $static_action), $matches);
-                            self::runFilter('after', self::$curPath);
+                        if( !method_exists($class, $cMethod)) {
+                            throw new \Exception("Method $cMethod, not supported.", 501);
                         }
-                        elseif(strpos($class_path, "@") !== false) {
-                            list($class, $action) = explode("@", $class_path, 2);
 
-                            $obj = new $class;
-                            if( !method_exists($obj,$action)) {
-                                throw new \Exception("Method, $action, not supported.", 501);
-                            }
-
-                            self::runFilter('before', self::$curPath);
-                            call_user_func_array(array($obj, $action), $matches);
-                            self::runFilter('after', self::$curPath);
-                        }
-                        else {
-                            self::runFilter('before', self::$curPath);
-                            call_user_func_array($class_path, $matches);
-                            self::runFilter('after', self::$curPath);
-                        }
+                        self::runFilter('before', self::$curPath);
+                        call_user_func_array(array($class, $cMethod), $matches);
+                        self::runFilter('after', self::$curPath);
                     }
                 }
-                if (!$found) {
+                if(!$found) {
                     throw new \Exception("URL, $path, not found. ".__FILE__, 404);
                 }
             }
             catch (\Exception $ex) {
-                if(!isset($config['ErrorView']) ) {
+                if(!isset(self::$config['ErrorView']) ) {
+                    
                     $error = new View\Error;
                     $error->displayAction($ex);
                 }
+                else {
+                    list($cClass, $cMethod, $cType) = $formatParser(self::$config['ErrorView']);
+                    $class = ($cType == "member") ? (new $cClass) : $cClass;
 
-/*                new $config['ErrorView'];
-
-                    print("Pleae")
-                    print("errcode: ".$ex->getCode()." errmessage: ".$ex->getMessage()." errfile: ".$ex->getFile());
-                    exit();
-*/                
+                    if( !method_exists($class, $cMethod)) {
+                        die("Error method `$cMethod`, not supported.");
+                    }
+                    call_user_func_array(array($class, $cMethod), array($ex));
+                }
             }
         }
 
