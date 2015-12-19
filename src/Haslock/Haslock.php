@@ -1,5 +1,5 @@
 <?php
-    namespace Hasanlock\Haslock;
+    namespace Haslock;
     
     /**
      * Haslock
@@ -18,21 +18,16 @@
      *   
      *   'ErrorView' => class with namepspace that handles Error; 
      *   'DefaultFunction' => default function to be called when no function name given; 
-     *   'Domain' => domain name with URL Scheme and without forward slash on tail
-     *   'SubDirPath' => sub directoy on the path
      *
      *   ----------------------------------------------------------------------------------------------------
      *   say URL is http://someurl.net/sub-dir/some-given-url
-     *   Domain     = http://someurl.net
-     *   SubDirPath = /sub-dir
-     *   Route      = /some-given-url
+     *   Route      = /sub-dir/some-given-url
      *   ----------------------------------------------------------------------------------------------------
      *
-     * 
-     *
      *   Haslock::config(array(
-     *       'Domain' => 'http://someurl.net',
-     *       'SubDirPath' => '/sub-dir',
+     *       'ErrorView'        => 'http://someurl.net',
+     *       'DefaultFunction'  => 'IndexAction',
+     *       'SubdomainSupport' => 'On',
      *   ));
      *
      *   $urls = array(
@@ -121,16 +116,42 @@
                     $retArr[2] = "member";
                 }
                 else {
-                    $retArr = array($classPath, self::$config['DefaultFunction'], "member");
+                    if(isset(self::$config['DefaultFunction'])) {
+                        $retArr = array($classPath, self::$config['DefaultFunction'], "member");                        
+                    }
+                    else {
+                        $retArr = array($classPath, "IndexAction", "member");                                                
+                    }
                 }
                 return $retArr;
             };
 
-            try {
+            try {                
+                if(isset(self::$config['SubdomainSupport']) && self::$config['SubdomainSupport'] == 'On') {
+                    $urlParts = parse_url($_SERVER['REQUEST_URI']);
+                    $hostParts = explode(".", $urlParts['host']);
 
-                /** replace subdirectory path */
-                $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-                if (isset(self::$config['SubDirPath'])) $path = str_replace(self::$config['SubDirPath'], '', $path);
+                    $hostPartsLength = count($hostParts);
+                    if($hostPartsLength > 3 || $hostPartsLength < 2) {
+                        throw new \Exception("Not Implemented", 501);
+                    }
+                    else if($hostPartsLength == 3) {
+                        if(isset($urls[$hostParts[0]])) {
+                            $urls = $urls[$hostParts[0]];
+                            $path = $urlParts['path'];                            
+                        }
+                        else {
+                            throw new \Exception("Not Implemented", 501);                            
+                        }
+                    }
+                    else if($hostPartsLength == 2) {
+                        $urls = $urls['www'];
+                        $path = $urlParts['path'];
+                    } 
+                }
+                else {
+                    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);                    
+                }                
 
                 $found = false;
                 krsort($urls);
@@ -169,7 +190,7 @@
             catch (\Exception $ex) {
                 if(!isset(self::$config['ErrorView']) ) {
                     
-                    $error = new View\Error;
+                    $error = new StaticFrameworkError();
                     $error->displayAction($ex);
                 }
                 else {
@@ -296,5 +317,56 @@
                     }
                     break;
             };
+        }
+    }
+    
+    abstract class BaseError {
+        abstract public function displayAction();
+    }
+    
+    class StaticFrameworkError extends BaseError {
+        public function displayAction($ex=null) {
+            if(!$ex) {
+                $ex = \Exception("Not Implemented", 501);
+            }
+            $html = $this->getErrorHtml($ex);
+            exit($html);
+        }
+        
+        protected function getErrorHtml($errorCode) {
+            $message = '';
+            switch ($errorCode->getCode() ) {
+                case 404:
+                    $message = '<span class="head">404 - Page Not Found</span><br />
+                                <span class="body">The page you requested was not found in our system.</span>';                    
+                    break;
+                case 501:
+                default:
+                    $message = '<span class="head">501 - Not Implemented</span><br />
+                                <span class="body">The page you requested have some error in our system.</span>';                    
+                    break;                    
+            };
+            
+            return '<html>
+                <head>
+                    <title>Error</title>
+                    <style>
+                        .head {
+                            font-size: 36px;
+                            font-family: sans-serif;
+                        }
+                        .body {
+                            font-size: 20px;
+                            font-family: sans-serif;
+                        }
+                        div {
+                            text-align: center;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div>'.$message.'</div>
+                </body>
+            </html>';
         }
     }
