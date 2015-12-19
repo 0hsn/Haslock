@@ -30,4 +30,5 @@ Haslock::config([
 Haslock::forge([
    '/' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
    '/some' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
+   '/some/:any' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
 ]);

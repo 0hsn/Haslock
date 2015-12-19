@@ -130,7 +130,6 @@
 
                 /** replace subdirectory path */
                 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-                if (isset(self::$config['SubDirPath'])) $path = str_replace(self::$config['SubDirPath'], '', $path);
 
                 $found = false;
                 krsort($urls);
