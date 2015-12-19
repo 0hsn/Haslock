@@ -27,6 +27,7 @@
      *   Haslock::config(array(
      *       'ErrorView'        => 'http://someurl.net',
      *       'DefaultFunction'  => 'IndexAction',
+     *       'SubdomainSupport' => 'On',
      *   ));
      *
      *   $urls = array(
@@ -125,10 +126,32 @@
                 return $retArr;
             };
 
-            try {
+            try {                
+                if(isset(self::$config['SubdomainSupport']) && self::$config['SubdomainSupport'] == 'On') {
+                    $urlParts = parse_url($_SERVER['REQUEST_URI']);
+                    $hostParts = explode(".", $urlParts['host']);
 
-                /** replace subdirectory path */
-                $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+                    $hostPartsLength = count($hostParts);
+                    if($hostPartsLength > 3 || $hostPartsLength < 2) {
+                        throw new \Exception("Not Implemented", 501);
+                    }
+                    else if($hostPartsLength == 3) {
+                        if(isset($urls[$hostParts[0]])) {
+                            $urls = $urls[$hostParts[0]];
+                            $path = $urlParts['path'];                            
+                        }
+                        else {
+                            throw new \Exception("Not Implemented", 501);                            
+                        }
+                    }
+                    else if($hostPartsLength == 2) {
+                        $urls = $urls['www'];
+                        $path = $urlParts['path'];
+                    } 
+                }
+                else {
+                    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);                    
+                }                
 
                 $found = false;
                 krsort($urls);
