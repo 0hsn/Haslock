@@ -18,21 +18,15 @@
      *   
      *   'ErrorView' => class with namepspace that handles Error; 
      *   'DefaultFunction' => default function to be called when no function name given; 
-     *   'Domain' => domain name with URL Scheme and without forward slash on tail
-     *   'SubDirPath' => sub directoy on the path
      *
      *   ----------------------------------------------------------------------------------------------------
      *   say URL is http://someurl.net/sub-dir/some-given-url
-     *   Domain     = http://someurl.net
-     *   SubDirPath = /sub-dir
-     *   Route      = /some-given-url
+     *   Route      = /sub-dir/some-given-url
      *   ----------------------------------------------------------------------------------------------------
      *
-     * 
-     *
      *   Haslock::config(array(
-     *       'Domain' => 'http://someurl.net',
-     *       'SubDirPath' => '/sub-dir',
+     *       'ErrorView'        => 'http://someurl.net',
+     *       'DefaultFunction'  => 'IndexAction',
      *   ));
      *
      *   $urls = array(
@@ -121,7 +115,12 @@
                     $retArr[2] = "member";
                 }
                 else {
-                    $retArr = array($classPath, self::$config['DefaultFunction'], "member");
+                    if(isset(self::$config['DefaultFunction'])) {
+                        $retArr = array($classPath, self::$config['DefaultFunction'], "member");                        
+                    }
+                    else {
+                        $retArr = array($classPath, "IndexAction", "member");                                                
+                    }
                 }
                 return $retArr;
             };
