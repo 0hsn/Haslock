@@ -1,5 +1,5 @@
 <?php
-    namespace Haslock;
+    namespace Hasanlock\Haslock;
     
     /**
      * Haslock

@@ -53,7 +53,7 @@ $_SERVER['REQUEST_URI'] = isset($argv[1]) ? $argv[1] : "";
 
 require_once(dirname(dirname(__DIR__))."/src/Haslock/Haslock.php");
 
-use Haslock\Haslock;
+use Hasanlock\Haslock\Haslock;
 
 Haslock::config([
     'DefaultFunction' => 'DefaultFunction',
