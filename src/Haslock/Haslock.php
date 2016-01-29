@@ -126,9 +126,16 @@
                 return $retArr;
             };
 
+            $getFullUri = function () {
+                $baseRequestScheme  = stripos($_SERVER['SERVER_PROTOCOL'],'https') === true ? 'https://' : 'http://';
+                $baseRequestUrl     = $baseRequestScheme.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
+                
+                return $baseRequestUrl;
+            };
+
             try {                
                 if(isset(self::$config['SubdomainSupport']) && self::$config['SubdomainSupport'] == 'On') {
-                    $urlParts = parse_url($_SERVER['REQUEST_URI']);
+                    $urlParts = parse_url($getFullUri());
                     $hostParts = explode(".", $urlParts['host']);
 
                     $hostPartsLength = count($hostParts);
@@ -145,8 +152,6 @@
                             $path = $urlParts['path'];
                         }
                         else {
-                            echo "OKAY:ERROR\n";
-                            var_dump($urls);
                             throw new \Exception("Not Implemented", 501);                            
                         }
                     }
@@ -159,10 +164,6 @@
                     $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);                    
                 }                
                 
-                // var_dump($urls);
-                // var_dump($path);
-                
-                // exit;
                 $found = false;
                 krsort($urls);
 
