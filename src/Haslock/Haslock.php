@@ -159,10 +159,10 @@
                     $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);                    
                 }                
                 
-                var_dump($urls);
-                var_dump($path);
+                // var_dump($urls);
+                // var_dump($path);
                 
-                exit;
+                // exit;
                 $found = false;
                 krsort($urls);
 
