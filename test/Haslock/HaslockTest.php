@@ -30,22 +30,28 @@ $a = [
 */
 $a = [ 
     "www" => [
-               '/' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
-               '/some' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
-               '/some/:any' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
-               '/payment' => 'SomeApp\Web\Frontend\Payment',
+               '/' => 'SomeApp\Web\WWW\Page@StaticPageAction',
+               '/some' => 'SomeApp\Web\WWW\Page@StaticPageAction',
+               '/some/:any' => 'SomeApp\Web\WWW\Page@StaticPageAction',
+               '/payment' => 'SomeApp\Web\WWW\Payment',
             ],
     "vv" => [
-               '/' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
-               '/some' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
-               '/some/:any' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
-               '/payment' => 'SomeApp\Web\Frontend\Payment',
+               '/' => 'SomeApp\Web\VV\Page@StaticPageAction',
+               '/some' => 'SomeApp\Web\VV\Page@StaticPageAction',
+               '/some/:any' => 'SomeApp\Web\VV\Page@StaticPageAction',
+               '/payment' => 'SomeApp\Web\VV\Payment',
             ],
     "app" => [
-               '/' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
-               '/some' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
-               '/some/:any' => 'SomeApp\Web\Frontend\Page@StaticPageAction',
-               '/payment' => 'SomeApp\Web\Frontend\Payment',
+               '/' => 'SomeApp\Web\APP\Page@StaticPageAction',
+               '/some' => 'SomeApp\Web\APP\Page@StaticPageAction',
+               '/some/:any' => 'SomeApp\Web\APP\Page@StaticPageAction',
+               '/payment' => 'SomeApp\Web\APP\Payment',
+            ],
+    "*" => [
+               '/' => 'SomeApp\Web\ANY\Page@StaticPageAction',
+               '/some' => 'SomeApp\Web\ANY\Page@StaticPageAction',
+               '/some/:any' => 'SomeApp\Web\ANY\Page@StaticPageAction',
+               '/payment' => 'SomeApp\Web\ANY\Payment',
             ],
 ];
 
