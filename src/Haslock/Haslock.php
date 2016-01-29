@@ -138,9 +138,15 @@
                     else if($hostPartsLength == 3) {
                         if(isset($urls[$hostParts[0]])) {
                             $urls = $urls[$hostParts[0]];
-                            $path = $urlParts['path'];                            
+                            $path = $urlParts['path'];
+                        }
+                        else if(isset($urls['*'])) {
+                            $urls = $urls['*'];
+                            $path = $urlParts['path'];
                         }
                         else {
+                            echo "OKAY:ERROR\n";
+                            var_dump($urls);
                             throw new \Exception("Not Implemented", 501);                            
                         }
                     }
@@ -152,7 +158,11 @@
                 else {
                     $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);                    
                 }                
-
+                
+                var_dump($urls);
+                var_dump($path);
+                
+                exit;
                 $found = false;
                 krsort($urls);
 
